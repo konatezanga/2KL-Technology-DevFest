@@ -2,7 +2,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Mon Application",
+  title: "Diagnostic App",
   description: "Interface avec footer de navigation",
 };
 
