@@ -2,14 +2,14 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Mon Application",
-  description: "Interface avec footer de navigation",
+  title: "Diagnostic App",
+  description: "IA et Cloud Computing pour fournir un outil de diagnostic préliminaire intelligent, rapide et accessible partout.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="fr">
-      <body className="min-h-screen pb-16"> {/* pb-16 = espace pour le footer */}
+      <body className="min-h-screen pb-16">
         {children}
         <Footer />
       </body>
