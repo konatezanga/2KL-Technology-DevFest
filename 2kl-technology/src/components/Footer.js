@@ -7,7 +7,7 @@ export default function Footer() {
   const pathname = usePathname();
 
   const navItems = [
-    { href: "/", label: "Accueil", icon: <Home size={22} /> },
+    { href: "/Accueil", label: "Accueil", icon: <Home size={22} /> },
     { href: "/diagnostic", label: "Diagnostic", icon: <Activity size={22} /> },
     { href: "/historique", label: "Historique", icon: <History size={22} /> },
     { href: "/profil", label: "Profil", icon: <User size={22} /> },
