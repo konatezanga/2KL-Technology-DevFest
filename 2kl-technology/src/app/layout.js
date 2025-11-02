@@ -11,7 +11,6 @@ export default function RootLayout({ children }) {
     <html lang="fr">
       <body className="min-h-screen pb-16">
         {children}
-        <Footer />
       </body>
     </html>
   );

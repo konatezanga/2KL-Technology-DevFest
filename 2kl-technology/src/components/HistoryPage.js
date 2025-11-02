@@ -17,7 +17,6 @@ import {
 
 export function HistoryPage({ onNavigate }) {
   const [selectedConsultation, setSelectedConsultation] = useState(null);
-  const router = useRouter();
 
   const consultations = [
     {
@@ -84,8 +83,7 @@ export function HistoryPage({ onNavigate }) {
   };
 
   const handleNewDiagnosis = () => {
-    // Utilise le router Next.js pour la navigation
-    router.push('/diagnostic');
+    onNavigate('diagnosis');
   };
 
   return (

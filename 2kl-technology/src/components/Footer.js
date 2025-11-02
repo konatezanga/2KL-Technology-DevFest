@@ -1,33 +1,39 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Home, Activity, History, User } from "lucide-react";
 
-export default function Footer() {
-  const pathname = usePathname();
-
+export default function Footer({ currentPage, onNavigate }) {
   const navItems = [
-    { href: "/", label: "Accueil", icon: <Home size={22} /> },
-    { href: "/diagnostic", label: "Diagnostic", icon: <Activity size={22} /> },
-    { href: "/historique", label: "Historique", icon: <History size={22} /> },
-    { href: "/profil", label: "Profil", icon: <User size={22} /> },
+    { key: "home", label: "Accueil", icon: <Home size={22} /> },
+    { key: "diagnosis", label: "Diagnostic", icon: <Activity size={22} /> },
+    { key: "history", label: "Historique", icon: <History size={22} /> },
+    { key: "profile", label: "Profil", icon: <User size={22} /> },
   ];
 
+  const handleNavigation = (pageKey) => {
+    if (typeof onNavigate === 'function') {
+      onNavigate(pageKey);
+    }
+  };
+
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-center md:gap-16 gap-8 py-4">
+    <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-center md:gap-16 gap-8 py-4 z-50">
       {navItems.map((item) => {
-        const active = pathname === item.href;
+        const active = currentPage === item.key;
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`flex flex-col items-center text-sm gap-0.5 ${
-              active ? "text-blue-600" : "text-gray-500"
+          <button
+            key={item.key}
+            onClick={() => handleNavigation(item.key)}
+            className={`flex flex-col items-center text-sm gap-0.5 transition-colors duration-200 ${
+              active 
+                ? "text-blue-600" 
+                : "text-gray-500 hover:text-blue-500"
             }`}
           >
-            <div>{item.icon}</div>
-            <span>{item.label}</span>
-          </Link>
+            <div className={active ? "scale-110 transition-transform" : ""}>
+              {item.icon}
+            </div>
+            <span className="text-xs font-medium">{item.label}</span>
+          </button>
         );
       })}
     </footer>
