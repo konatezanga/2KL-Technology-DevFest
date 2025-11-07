@@ -72,7 +72,7 @@ export default function ProfilePage({ onNavigate }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-100">
         <div className="max-w-2xl mx-auto px-6 py-4">
@@ -147,7 +147,7 @@ export default function ProfilePage({ onNavigate }) {
               <Settings className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">À propos de MyHealth AI</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">À propos de Consult</h3>
               <p className="text-gray-700 text-lg mb-3 leading-relaxed">
                 Version 1.0.0 - Un diagnostic préliminaire intelligent, rapide et accessible 
                 grâce à l&apos;IA + Cloud.

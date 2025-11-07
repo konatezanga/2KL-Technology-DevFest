@@ -40,6 +40,7 @@ function Button({
   variant,
   size,
   asChild = false,
+  onNavigate, // filtre les props non-HTML pour éviter de passer à l'élément DOM
   ...props
 }) {
   const Comp = asChild ? Slot : "button";
