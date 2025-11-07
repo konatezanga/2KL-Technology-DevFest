@@ -1,21 +1,22 @@
-'use client';
-import { useState } from 'react';
-import { UserInfoPage } from '@/components/UserInfoPage';
-import { SymptomsPage } from '@/components/SymptomsPage';
-import { ResultsPage } from '@/components/ResultsPage';
+"use client";
+import { useRouter } from "next/navigation";
+import { UserInfoPage } from "@/components/UserInfoPage";
+import Footer from "@/components/Footer";
 
 export default function DiagnosticPage() {
-  const [currentStep, setCurrentStep] = useState('userinfo');
+  const router = useRouter();
 
-  const handleNavigate = (step) => {
-    setCurrentStep(step);
+  const handleNavigate = (pageKey) => {
+    if (pageKey === "home") router.push("/accueil");
+    if (pageKey === "diagnosis") router.push("/diagnostic");
+    if (pageKey === "history") router.push("/historique");
+    if (pageKey === "profile") router.push("/profil");
   };
 
   return (
-    <div>
-      {currentStep === 'userinfo' && <UserInfoPage onNavigate={handleNavigate} />}
-      {currentStep === 'symptoms' && <SymptomsPage onNavigate={handleNavigate} />}
-      {currentStep === 'results' && <ResultsPage onNavigate={handleNavigate} />}
+    <div className="relative min-h-screen pb-16">
+      <UserInfoPage onNavigate={handleNavigate} />
+      <Footer currentPage="diagnosis" onNavigate={handleNavigate} />
     </div>
   );
 }
