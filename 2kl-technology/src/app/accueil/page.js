@@ -2,6 +2,8 @@
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 
+import HomePage from '@/components/HomePage';
+
 export default function AccueilPage() {
   const router = useRouter();
 
@@ -14,10 +16,9 @@ export default function AccueilPage() {
 
   return (
     <div className="relative min-h-screen pb-16 flex items-center justify-center">
-      <main className="text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Profil</h1>
-        <p className="text-gray-600">Page Accueil - Contenu à venir</p>
-      </main>
+      
+        <HomePage onNavigate={handleNavigate} />
+      
 
       <Footer currentPage="home" onNavigate={handleNavigate} />
     </div>
