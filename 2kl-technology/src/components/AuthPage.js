@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/Tabs";
 import { Card, CardContent } from "./ui/Card";
 import { Checkbox } from "./ui/Checkbox";
 import { Activity, Eye, EyeOff, ArrowLeft, Shield, Heart, Sparkles } from "lucide-react";
-
+import { useRouter } from "next/navigation";
 function ActivityIcon({ className }) {
   return <Activity className={className} />;
 }
@@ -17,6 +17,7 @@ export function AuthPage({ onNavigate, onAuth }) {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
 
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [signupForm, setSignupForm] = useState({
@@ -43,13 +44,13 @@ export function AuthPage({ onNavigate, onAuth }) {
   const handleLogin = (e) => {
     e.preventDefault();
     console.log("Tentative de Connexion avec:", loginForm);
-    onAuth(true);
+     router.push("/accueil");
   };
 
   const handleSignup = (e) => {
     e.preventDefault();
     console.log("Tentative d'Inscription avec:", signupForm);
-    onAuth(true);
+    router.push("/accueil");
   };
 
   const handleBackToHome = () => {

@@ -159,13 +159,10 @@ export default function LandingPage({ onNavigate }) {
     },
   ];*/
 
-  const handleNavigate = (path) => {
-    if (onNavigate) {
-      onNavigate(path);
-    } else {
-      router.push(path);
-    }
-  };
+ const handleNavigate = (path) => {
+    router.push("/auth");
+};
+
 
   return (
     <div className="min-h-screen bg-white overflow-hidden">
