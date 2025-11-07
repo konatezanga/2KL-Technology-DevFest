@@ -1,11 +1,18 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Activity, BookOpen, Stethoscope, TrendingUp, ArrowRight } from 'lucide-react';
+import { 
+  Activity, 
+  BookOpen, 
+  Stethoscope, 
+  TrendingUp, 
+  ArrowRight,
+  Clock
+} from 'lucide-react';
 
 // Composant ImageWithFallback pour Next.js
 function ImageWithFallback({ src, alt, className }) {
@@ -13,8 +20,8 @@ function ImageWithFallback({ src, alt, className }) {
 
   if (error) {
     return (
-      <div className={`bg-gray-200 flex items-center justify-center ${className}`}>
-        <Activity className="w-12 h-12 text-gray-400" />
+      <div className={`bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ${className}`}>
+        <Activity className="w-8 h-8 text-gray-400" />
       </div>
     );
   }
@@ -64,51 +71,53 @@ export default function HomePage({ onNavigate }) {
       icon: Stethoscope,
       title: 'Diagnostic rapide',
       description: 'Analysez vos symptômes avec l\'IA',
-      color: 'bg-blue-100 text-blue-600',
+      color: 'bg-gradient-to-br from-blue-500 to-blue-600',
       action: () => onNavigate('diagnosis'),
     },
     {
       icon: BookOpen,
       title: 'Articles santé',
       description: 'Découvrez nos guides médicaux',
-      color: 'bg-purple-100 text-purple-600',
+      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
       action: () => onNavigate('articles'),
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+      <div className="bg-white shadow-sm border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
               <Activity className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white">MyHealth AI</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">MyHealth AI</h1>
+              <p className="text-sm text-gray-600">
+                Que souhaitez-vous faire aujourd'hui ?
+              </p>
+            </div>
           </div>
-          <p className="text-blue-100">
-            Bienvenue ! Que souhaitez-vous faire aujourd'hui ?
-          </p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8 space-y-8">
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-6">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (
               <Card
                 key={index}
-                className="p-6 hover:shadow-lg transition-all cursor-pointer border-gray-200"
+                className="p-6 hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-white/80 backdrop-blur-sm rounded-2xl"
                 onClick={action.action}
               >
-                <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mb-4`}>
-                  <Icon className="w-6 h-6" />
+                <div className={`w-14 h-14 ${action.color} rounded-xl flex items-center justify-center mb-4 shadow-sm`}>
+                  <Icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">{action.title}</h3>
-                <p className="text-sm text-gray-600">{action.description}</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{action.title}</h3>
+                <p className="text-gray-600 text-lg">{action.description}</p>
               </Card>
             );
           })}
@@ -116,20 +125,20 @@ export default function HomePage({ onNavigate }) {
 
         {/* Featured Articles Section */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-blue-900">Articles en vedette</h2>
-              <p className="text-sm text-gray-600">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">Articles en vedette</h2>
+              <p className="text-lg text-gray-600">
                 Informez-vous sur les maladies courantes
               </p>
             </div>
             <Button
               variant="ghost"
               onClick={() => onNavigate('articles')}
-              className="text-blue-600 hover:text-blue-700"
+              className="text-blue-600 hover:text-blue-700 text-lg font-semibold"
             >
               Voir tout
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
 
@@ -137,7 +146,7 @@ export default function HomePage({ onNavigate }) {
             {featuredArticles.map((article) => (
               <Card
                 key={article.id}
-                className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer border-gray-200"
+                className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-white/80 backdrop-blur-sm rounded-2xl"
                 onClick={() => onNavigate('article-detail', article.id)}
               >
                 <div className="aspect-video overflow-hidden relative">
@@ -147,15 +156,18 @@ export default function HomePage({ onNavigate }) {
                     className="object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <Badge className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300 px-3 py-1 rounded-lg font-semibold">
                       {article.category}
                     </Badge>
-                    <span className="text-xs text-gray-500">{article.readTime}</span>
+                    <div className="flex items-center gap-1 text-gray-500 text-sm font-medium">
+                      <Clock className="w-4 h-4" />
+                      {article.readTime}
+                    </div>
                   </div>
-                  <h4 className="text-base font-semibold text-blue-900 mb-2">{article.title}</h4>
-                  <p className="text-sm text-gray-600">{article.description}</p>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2 leading-tight">{article.title}</h4>
+                  <p className="text-gray-600 text-lg leading-relaxed">{article.description}</p>
                 </div>
               </Card>
             ))}
@@ -163,21 +175,21 @@ export default function HomePage({ onNavigate }) {
         </div>
 
         {/* Stats Card */}
-        <Card className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        <Card className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-2xl shadow-lg">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-6 h-6 text-white" />
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+              <TrendingUp className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">Nouveau : Tests de dépistage</h3>
-              <p className="text-sm text-gray-700 mb-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Nouveau : Tests de dépistage</h3>
+              <p className="text-gray-700 text-lg mb-4 leading-relaxed">
                 Découvrez nos articles avec des questionnaires interactifs pour évaluer votre 
                 risque de développer certaines maladies. Répondez à quelques questions simples 
                 et obtenez une évaluation personnalisée.
               </p>
               <Button
                 onClick={() => onNavigate('articles')}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="h-12 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
               >
                 Explorer les articles
               </Button>
