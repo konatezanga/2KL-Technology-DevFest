@@ -1,6 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
+import ProfilePage from '@/components/ProfilPage';
 
 export default function ProfilPageWrapper() {
   const router = useRouter();
@@ -13,12 +14,13 @@ export default function ProfilPageWrapper() {
   };
 
   return (
-    <div className="relative min-h-screen pb-16 flex items-center justify-center">
-      <main className="text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Profil</h1>
-        <p className="text-gray-600">Page profil - Contenu à venir</p>
-      </main>
+    <div className="flex flex-col min-h-screen">
+      {/* Contenu principal qui prend tout l'espace sauf le footer */}
+      <div className="flex-1 flex items-center justify-center">
+        <ProfilePage onNavigate={handleNavigate} />
+      </div>
 
+      {/* Footer en bas */}
       <Footer currentPage="profile" onNavigate={handleNavigate} />
     </div>
   );
