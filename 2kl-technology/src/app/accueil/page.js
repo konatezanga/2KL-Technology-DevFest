@@ -15,11 +15,10 @@ export default function AccueilPage() {
   };
 
   return (
-    <div className="relative min-h-screen pb-16 flex items-center justify-center">
-      
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1">
         <HomePage onNavigate={handleNavigate} />
-      
-
+      </div>
       <Footer currentPage="home" onNavigate={handleNavigate} />
     </div>
   );

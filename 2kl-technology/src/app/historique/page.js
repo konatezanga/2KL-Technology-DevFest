@@ -14,8 +14,10 @@ export default function HistoriquePageWrapper() {
   };
 
   return (
-    <div className="relative min-h-screen pb-16">
-      <HistoryPage onNavigate={handleNavigate} />
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1">
+        <HistoryPage onNavigate={handleNavigate} />
+      </div>
       <Footer currentPage="history" onNavigate={handleNavigate} />
     </div>
   );
