@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { useRouter } from 'next/navigation';
 import { 
   User, 
   Mail, 
@@ -18,10 +19,13 @@ import {
   FileText,
   ShieldCheck
 } from 'lucide-react';
+import { getAuth } from 'firebase/auth';
+import { logoutUser } from '@/firebase/authFunctions';
 
-// Composant ImageWithFallback pour Next.js
+// Composant Image avec fallback
 function ImageWithFallback({ src, alt, className }) {
   const [error, setError] = useState(false);
+ 
 
   if (error) {
     return (
@@ -44,6 +48,33 @@ function ImageWithFallback({ src, alt, className }) {
 }
 
 export default function ProfilePage({ onNavigate }) {
+  const [user, setUser] = useState({
+    name: 'Utilisateur',
+    email: 'email@exemple.com',
+    photoURL: '',
+  });
+   const router = useRouter();
+
+  const auth = getAuth();
+
+  // Récupération des infos de l'utilisateur connecté
+ useEffect(() => {
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    const email = currentUser.email || 'email@exemple.com';
+    const username = currentUser.displayName 
+      || email.split('@')[0]        // ✅ extrait avant le @
+      || 'Utilisateur';
+
+    setUser({
+      name: username.charAt(0).toUpperCase() + username.slice(1),
+      email,
+      photoURL: currentUser.photoURL || '',
+    });
+  }
+}, [auth]);
+
+
   const menuItems = [
     {
       icon: User,
@@ -71,29 +102,40 @@ export default function ProfilePage({ onNavigate }) {
     },
   ];
 
+  const handleLogout = async () => {
+    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+      try {
+        await logoutUser();
+        router.push("/auth"); 
+      } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+        alert('Impossible de se déconnecter. Réessayez.');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+      
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-2xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full overflow-hidden shadow-lg relative flex-shrink-0">
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1758691463610-3c2ecf5fb3fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFsdGhjYXJlJTIwcHJvZmVzc2lvbmFsJTIwc21pbGluZ3xlbnwxfHx8fDE3NTk0MTY5MjN8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Profile"
-                className="object-cover"
-              />
+        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-4">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full overflow-hidden shadow-lg relative flex-shrink-0">
+            <ImageWithFallback
+              src={user.photoURL || 'https://images.unsplash.com/photo-1758691463610-3c2ecf5fb3fa'}
+              alt="Profile"
+              className="object-cover"
+            />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{user.name}</h1>
+            <div className="flex items-center gap-2 text-lg text-gray-600 mb-1">
+              <Mail className="w-5 h-5" />
+              {user.email}
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">Jean Dupont</h1>
-              <div className="flex items-center gap-2 text-lg text-gray-600 mb-1">
-                <Mail className="w-5 h-5" />
-                jean.dupont@email.com
-              </div>
-              <div className="flex items-center gap-2 text-lg text-gray-600">
-                <Calendar className="w-5 h-5" />
-                Membre depuis octobre 2025
-              </div>
+            <div className="flex items-center gap-2 text-lg text-gray-600">
+              <Calendar className="w-5 h-5" />
+              Membre depuis octobre 2025
             </div>
           </div>
         </div>
@@ -101,6 +143,7 @@ export default function ProfilePage({ onNavigate }) {
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
           <Card className="p-5 text-center border-0 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg">
@@ -149,8 +192,7 @@ export default function ProfilePage({ onNavigate }) {
             <div className="flex-1">
               <h3 className="text-xl font-bold text-gray-900 mb-2">À propos de Consult</h3>
               <p className="text-gray-700 text-lg mb-3 leading-relaxed">
-                Version 1.0.0 - Un diagnostic préliminaire intelligent, rapide et accessible 
-                grâce à l&apos;IA + Cloud.
+                Version 1.0.0 - Un diagnostic préliminaire intelligent, rapide et accessible grâce à l'IA + Cloud.
               </p>
               <div className="text-gray-700 space-y-2 text-lg">
                 <div className="flex items-center gap-2">
@@ -163,7 +205,7 @@ export default function ProfilePage({ onNavigate }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                  <span>Propulsé par l&apos;intelligence artificielle</span>
+                  <span>Propulsé par l'intelligence artificielle</span>
                 </div>
               </div>
             </div>
@@ -173,12 +215,8 @@ export default function ProfilePage({ onNavigate }) {
         {/* Logout */}
         <Button
           variant="outline"
-          className="w-full h-12 text-red-600 hover:text-red-700 hover:bg-red-50 border-2 border-red-200 rounded-xl font-semibold text-lg transition-all duration-200"
-          onClick={() => {
-            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-              onNavigate('landing');
-            }
-          }}
+          className="w-full h-12 text-red-600 hover:text-red-700 hover:bg-red-50 border-2 border-red-200 rounded-xl font-semibold text-lg flex items-center justify-center transition-all duration-200"
+          onClick={handleLogout}
         >
           <LogOut className="w-5 h-5 mr-2" />
           Se déconnecter
