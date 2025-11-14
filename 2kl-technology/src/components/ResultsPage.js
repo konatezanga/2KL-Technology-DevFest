@@ -1,3 +1,4 @@
+// ResultsPage.js
 'use client';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
@@ -13,50 +14,61 @@ import {
   Home as HomeIcon,
   Pill,
   Building2,
-  RotateCcw
+  RotateCcw,
+  Heart,
+  Activity,
+  Thermometer
 } from 'lucide-react';
 
-export function ResultsPage({ onNavigate }) {
-  const diagnoses = [
-    {
-      name: 'Grippe saisonnière',
-      probability: 78,
-      severity: 'moderate',
-    },
-    {
-      name: 'Infection virale commune',
-      probability: 65,
-      severity: 'low',
-    },
-    {
-      name: 'Migraine',
-      probability: 42,
-      severity: 'low',
-    },
-  ];
+export function ResultsPage({ onNavigate, diagnosisResult }) {
+  console.log('ResultsPage - diagnosisResult reçu:', diagnosisResult);
 
-  const recommendations = [
-    {
-      icon: HomeIcon,
-      title: 'Repos à domicile',
-      description: 'Restez au repos pendant 2-3 jours',
-      type: 'home',
-    },
-    {
-      icon: Pill,
-      title: 'Traitement symptomatique',
-      description: 'Paracétamol pour la fièvre et les douleurs (selon prescription)',
-      type: 'treatment',
-    },
-    {
-      icon: Stethoscope,
-      title: 'Consulter un médecin généraliste',
-      description: 'Rendez-vous recommandé sous 48-72h si les symptômes persistent',
-      type: 'doctor',
-    },
-  ];
+  // Lire depuis localStorage si les props sont vides
+  let finalDiagnosisResult = diagnosisResult;
+  
+  if (!diagnosisResult || typeof diagnosisResult !== 'object' || !diagnosisResult.diagnosis_fr) {
+    console.log('[Results] Tentative de lecture depuis localStorage...');
+    try {
+      const storedResult = localStorage.getItem('lastDiagnosisResult');
+      if (storedResult) {
+        finalDiagnosisResult = JSON.parse(storedResult);
+        console.log('[Results] Données récupérées depuis localStorage:', finalDiagnosisResult);
+      }
+    } catch (error) {
+      console.error('[Results] Erreur lecture localStorage:', error);
+    }
+  }
+  
+  console.log('[Results] Données finales utilisées:', finalDiagnosisResult);
+  
+  // Vérification que les données existent
+  if (!finalDiagnosisResult || typeof finalDiagnosisResult !== 'object' || !finalDiagnosisResult.diagnosis_fr) {
+    console.log('[Results] Données manquantes ou invalides:', finalDiagnosisResult);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+        <Card className="p-8 text-center max-w-md">
+          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-yellow-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Aucun résultat disponible</h2>
+          <p className="text-gray-600 mb-4">
+            Les résultats du diagnostic ne sont pas disponibles.
+          </p>
+          <Button 
+            onClick={() => onNavigate('userinfo')}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Commencer un nouveau diagnostic
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
-  const urgencyLevel = 'moderate';
+  const diagnoses = finalDiagnosisResult.diagnosis_fr.possibleConditions || [];
+  const recommendations = finalDiagnosisResult.diagnosis_fr.recommendations || [];
+  const urgencyLevel = finalDiagnosisResult.diagnosis_fr.urgencyLevel || 'low';
+  const analysis = finalDiagnosisResult.diagnosis_fr.analysis || '';
 
   const getUrgencyBadge = (level) => {
     switch (level) {
@@ -99,6 +111,25 @@ export function ResultsPage({ onNavigate }) {
     }
   };
 
+  const handleSaveReport = async () => {
+    try {
+      const reportData = {
+        ...diagnosisResult,
+        savedAt: new Date().toISOString(),
+        id: Date.now().toString()
+      };
+      
+      const existingReports = JSON.parse(localStorage.getItem('medicalReports') || '[]');
+      existingReports.push(reportData);
+      localStorage.setItem('medicalReports', JSON.stringify(existingReports));
+      
+      alert('Résultats sauvegardés avec succès !');
+      onNavigate('history');
+    } catch (error) {
+      alert('Erreur lors de la sauvegarde');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 pb-24">
       {/* Header */}
@@ -118,22 +149,36 @@ export function ResultsPage({ onNavigate }) {
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 md:py-8 space-y-6 md:space-y-8">
-        {/* Alert */}
+        {/* Alert pour cas critique */}
         {urgencyLevel === 'critical' && (
           <Card className="p-4 md:p-6 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl md:rounded-2xl shadow-lg">
             <div className="flex gap-3 md:gap-4 items-start">
               <AlertCircle className="w-6 h-6 md:w-8 md:h-8 text-red-600 flex-shrink-0 mt-0.5 md:mt-1" />
               <div>
                 <p className="text-red-900 text-sm md:text-lg font-semibold">
-                  <strong>Attention :</strong> Vos symptômes nécessitent une attention médicale immédiate. 
-                  Veuillez consulter un médecin ou vous rendre aux urgences.
+                  <strong>ATTENTION URGENCE MÉDICALE :</strong> Vos symptômes nécessitent une attention médicale immédiate. 
+                  Appelez le 185 (SAMU) ou rendez-vous aux urgences sans délai.
                 </p>
               </div>
             </div>
           </Card>
         )}
 
-        {/* Diagnoses */}
+        {/* Alert pour cas modéré */}
+        {urgencyLevel === 'moderate' && (
+          <Card className="p-4 md:p-6 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-xl md:rounded-2xl shadow-lg">
+            <div className="flex gap-3 md:gap-4 items-start">
+              <AlertTriangle className="w-6 h-6 md:w-8 md:h-8 text-orange-600 flex-shrink-0 mt-0.5 md:mt-1" />
+              <div>
+                <p className="text-orange-900 text-sm md:text-lg font-semibold">
+                  <strong>Consultation recommandée :</strong> Prenez rendez-vous avec un médecin dans les 24-48h.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Diagnoses - DONNÉES RÉELLES */}
         <Card className="p-4 md:p-6 lg:p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Maladies probables</h2>
           <div className="space-y-4 md:space-y-6">
@@ -141,40 +186,63 @@ export function ResultsPage({ onNavigate }) {
               <div key={index} className="space-y-3 md:space-y-4 p-3 md:p-4 bg-white rounded-lg md:rounded-xl border border-gray-100 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <span className="text-base md:text-lg font-semibold text-gray-900 break-words">{diagnosis.name}</span>
+                    <span className="text-base md:text-lg font-semibold text-gray-900 break-words">
+                      {diagnosis.name}
+                    </span>
                     {index === 0 && (
                       <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300 px-2 py-1 rounded-lg font-semibold text-xs md:text-sm w-fit">
                         Plus probable
                       </Badge>
                     )}
                   </div>
-                  <span className="text-xl md:text-2xl font-bold text-blue-600">{diagnosis.probability}%</span>
+                  <span className="text-xl md:text-2xl font-bold text-blue-600">
+                    {diagnosis.probability}%
+                  </span>
                 </div>
                 <div className="relative">
-                  <Progress value={diagnosis.probability} className="h-2 md:h-3 bg-gray-200 rounded-full" />
+                  <Progress 
+                    value={diagnosis.probability} 
+                    className="h-2 md:h-3 bg-gray-200 rounded-full" 
+                  />
                   <div 
-                    className={`absolute top-0 left-0 h-2 md:h-3 rounded-full ${getSeverityColor(diagnosis.severity)} shadow-sm`}
+                    className={`absolute top-0 left-0 h-2 md:h-3 rounded-full ${getSeverityColor(urgencyLevel)} shadow-sm`}
                     style={{ width: `${diagnosis.probability}%` }}
                   />
                 </div>
+                {diagnosis.original_name && diagnosis.original_name !== diagnosis.name && (
+                  <p className="text-xs text-gray-500 italic">
+                    Terme médical: {diagnosis.original_name}
+                  </p>
+                )}
               </div>
             ))}
           </div>
 
-          <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg md:rounded-xl">
-            <p className="text-blue-800 text-xs md:text-sm flex items-start md:items-center gap-2">
-              <span className="text-sm md:text-base mt-0.5 md:mt-0">ℹ️</span>
-              Ces résultats sont générés par IA et ne remplacent pas un diagnostic médical professionnel.
+          {/* Analyse détaillée */}
+          {analysis && (
+            <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg md:rounded-xl">
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">Analyse médicale :</h4>
+              <p className="text-gray-700 text-sm leading-relaxed">{analysis}</p>
+            </div>
+          )}
+
+          <div className="mt-4 md:mt-6 p-3 md:p-4 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg md:rounded-xl">
+            <p className="text-gray-700 text-xs md:text-sm flex items-start gap-2">
+              <span className="text-base mt-0.5">ℹ️</span>
+              Ces résultats sont générés par IA et ne remplacent pas un diagnostic médical professionnel. 
+              Consultez toujours un médecin pour un diagnostic définitif.
             </p>
           </div>
         </Card>
 
-        {/* Recommendations */}
+        {/* Recommendations - DONNÉES RÉELLES (max 4) */}
         <Card className="p-4 md:p-6 lg:p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Recommandations</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
+            Recommandations {recommendations.length > 0 && `(${recommendations.length})`}
+          </h2>
           <div className="space-y-3 md:space-y-4">
             {recommendations.map((rec, index) => {
-              const Icon = rec.icon;
+              const Icon = getIconComponent(rec.icon);
               return (
                 <div 
                   key={index} 
@@ -184,29 +252,18 @@ export function ResultsPage({ onNavigate }) {
                     <Icon className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2 break-words">{rec.title}</h4>
-                    <p className="text-gray-600 text-sm md:text-base lg:text-lg break-words">{rec.description}</p>
+                    <h4 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2 break-words">
+                      {rec.title}
+                    </h4>
+                    <p className="text-gray-600 text-sm md:text-base lg:text-lg break-words">
+                      {rec.description}
+                    </p>
                   </div>
                 </div>
               );
             })}
           </div>
         </Card>
-
-        {/* Urgency Recommendation */}
-        {urgencyLevel === 'critical' && (
-          <Card className="p-4 md:p-6 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl md:rounded-2xl shadow-lg">
-            <div className="flex gap-3 md:gap-4 items-center">
-              <Building2 className="w-8 h-8 md:w-10 md:h-10 text-red-600 flex-shrink-0" />
-              <div>
-                <h3 className="text-lg md:text-xl font-bold text-red-900 mb-1 md:mb-2">Action immédiate recommandée</h3>
-                <p className="text-red-800 text-base md:text-lg">
-                  Rendez-vous au CHU ou appelez le SAMU (15) si les symptômes s'aggravent.
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
@@ -215,6 +272,9 @@ export function ResultsPage({ onNavigate }) {
             className="flex-1 h-12 md:h-14 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-xl font-semibold text-base md:text-lg transition-all duration-200"
             onClick={() => {
               alert('Téléchargement du rapport PDF...');
+
+              // Ici on intégrere la génération PDF réelle
+
             }}
           >
             <FileText className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
@@ -222,10 +282,7 @@ export function ResultsPage({ onNavigate }) {
           </Button>
           <Button
             className="flex-1 h-12 md:h-14 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl text-base md:text-lg transition-all duration-200"
-            onClick={() => {
-              alert('Résultats sauvegardés dans votre historique !');
-              onNavigate('history');
-            }}
+            onClick={handleSaveReport}
           >
             <Save className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
             Sauvegarder
@@ -240,18 +297,24 @@ export function ResultsPage({ onNavigate }) {
           <RotateCcw className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3" />
           Nouveau diagnostic
         </Button>
-
-        {/* Progress Indicator */}
-        <div className="mt-8 md:mt-12">
-          <div className="flex items-center justify-center gap-2 md:gap-3">
-            <div className="w-3 h-3 md:w-4 md:h-4 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
-            <div className="w-3 h-3 md:w-4 md:h-4 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
-            <div className="w-3 h-3 md:w-4 md:h-4 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
-            <div className="w-3 h-3 md:w-4 md:h-4 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
-          </div>
-          <p className="text-center text-base md:text-lg text-gray-600 mt-2 md:mt-3 font-semibold">Diagnostic terminé ✓</p>
-        </div>
       </div>
     </div>
   );
+}
+
+// Helper pour les icônes - ÉTENDU
+function getIconComponent(iconName) {
+  const icons = {
+    'HomeIcon': HomeIcon,
+    'Pill': Pill,
+    'Stethoscope': Stethoscope,
+    'Building2': Building2,
+    'FileText': FileText,
+    'Heart': Heart,
+    'Activity': Activity,
+    'Thermometer': Thermometer,
+    'AlertTriangle': AlertTriangle,
+    'AlertCircle': AlertCircle
+  };
+  return icons[iconName] || HomeIcon;
 }

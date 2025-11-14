@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useEffect } from 'react';
 
 // Pages du flux diagnostic
 import { UserInfoPage } from '@/components/UserInfoPage';
@@ -17,14 +18,62 @@ import Footer from '@/components/Footer';
 export default function App() {
   const [currentPage, setCurrentPage] = useState('landing');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // État global pour les données du formulaire
+  const [formData, setFormData] = useState({
+    age: '',
+    gender: '',
+    medicalHistory: '',
+    symptoms: [],
+    vitalSigns: {
+      temperature: '',
+      bloodPressure: '', 
+      heartRate: ''
+    }
+  });
+  
+  // État pour les résultats du diagnostic
+  const [diagnosisResult, setDiagnosisResult] = useState(null);
 
-  const handleNavigate = (page) => {
+  // Fonction pour mettre à jour les données du formulaire
+  const updateFormData = (newData) => {
+    setFormData(prev => ({ ...prev, ...newData }));
+  };
+
+  const handleNavigate = (page, navigationData = null) => {
+    console.log(`Navigation vers ${page} avec données:`, navigationData);
+    
     // Si l'utilisateur essaie d'accéder aux pages protégées sans être connecté
     if (['home', 'diagnosis', 'userinfo', 'symptoms', 'results', 'history', 'profile'].includes(page) && !isAuthenticated) {
       setCurrentPage('auth');
       return;
     }
 
+    // Gestion des résultats du diagnostic lors de la navigation
+    if (page === 'results' && navigationData?.diagnosisResult) {
+      console.log('Définition du diagnosisResult:', navigationData.diagnosisResult);
+      setDiagnosisResult(navigationData.diagnosisResult);
+      setCurrentPage('results');
+      return;
+    }
+
+    // Réinitialisation des données si on recommence un diagnostic
+    if (page === 'userinfo') {
+      setFormData({
+        age: '',
+        gender: '',
+        medicalHistory: '',
+        symptoms: [],
+        vitalSigns: {
+          temperature: '',
+          bloodPressure: '',
+          heartRate: ''
+        }
+      });
+      setDiagnosisResult(null);
+    }
+
+    // Navigation standard
     if (page === 'home') {
       setCurrentPage('home');
     } else if (page === 'diagnosis') {
@@ -36,14 +85,11 @@ export default function App() {
 
   const handleAuth = (status) => {
     setIsAuthenticated(status);
-    if (status) setCurrentPage("home"); // redirige automatiquement après login
+    if (status) setCurrentPage("home");
   };
 
-
-  // SIMPLIFICATION : Footer TOUJOURS visible si connecté
   const shouldShowFooter = isAuthenticated;
 
-  // Déterminer l'élément de navigation actif
   const getActiveNavItem = () => {
     if (currentPage === 'history') return 'history';
     if (currentPage === 'profile') return 'profile';
@@ -51,6 +97,18 @@ export default function App() {
     return 'home';
   };
 
+
+  console.log('[App] currentPage:', currentPage);
+  console.log('[App] formData:', formData);
+  console.log('[App] updateFormData function:', typeof updateFormData);
+
+  useEffect(() => {
+    console.log('[App] diagnosisResult STATE:', diagnosisResult);
+  }, [diagnosisResult]);
+
+  useEffect(() => {
+    console.log('[App] currentPage STATE:', currentPage);
+  }, [currentPage]);
 
   return (
     <div className={'size-full'}>
@@ -64,15 +122,42 @@ export default function App() {
           {currentPage === 'home' && (
             <main className="flex min-h-screen items-center justify-center">
               <div className="text-center">
-                <h1 className="text-3xl font-bold text-gray-800 mb-4">Bienvenue</h1>
-                <p className="text-gray-600">Page d'accueil - Vous êtes connecté</p>
+                <h1 className="text-3xl font-bold text-gray-800 mb-4">Bienvenue dans Consult</h1>
+                <p className="text-gray-600">Diagnostic médical intelligent par IA</p>
+                <button 
+                  onClick={() => handleNavigate('diagnosis')}
+                  className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+                >
+                  Commencer un diagnostic
+                </button>
               </div>
             </main>
           )}
 
-          {currentPage === 'userinfo' && <UserInfoPage onNavigate={handleNavigate} />}
-          {currentPage === 'symptoms' && <SymptomsPage onNavigate={handleNavigate} />}
-          {currentPage === 'results' && <ResultsPage onNavigate={handleNavigate} />}
+          {/* Passage des props de données */}
+          {currentPage === 'userinfo' && (
+            <UserInfoPage 
+              onNavigate={handleNavigate} 
+              formData={formData}
+              updateFormData={updateFormData}
+            />
+          )}
+          
+          {currentPage === 'symptoms' && (
+            <SymptomsPage 
+              onNavigate={handleNavigate}
+              formData={formData}
+              updateFormData={updateFormData}
+            />
+          )}
+          
+          {currentPage === 'results' && (
+            <ResultsPage 
+              onNavigate={handleNavigate}
+              diagnosisResult={diagnosisResult}
+            />
+          )}
+          
           {currentPage === 'history' && <HistoryPage onNavigate={handleNavigate} />}
 
           {currentPage === 'profile' && (
