@@ -7,34 +7,123 @@ import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { Activity, Thermometer, Heart, TrendingUp, X, Sparkles } from 'lucide-react';
 
-export function SymptomsPage({ onNavigate }) {
-  const [symptoms, setSymptoms] = useState([]);
+export function SymptomsPage({ onNavigate, formData = {}, updateFormData }) {
+
+  console.log('[Symptoms] Props reçues - onNavigate:', typeof onNavigate);
+
+  // Initialisation avec les données du parent OU données locales
+  const [localSymptoms, setLocalSymptoms] = useState(formData?.symptoms || []);
   const [currentSymptom, setCurrentSymptom] = useState('');
-  const [vitalSigns, setVitalSigns] = useState({
-    temperature: '',
-    bloodPressure: '',
-    heartRate: '',
+  const [localVitalSigns, setLocalVitalSigns] = useState({
+    temperature: formData?.vitalSigns?.temperature || '',
+    bloodPressure: formData?.vitalSigns?.bloodPressure || '',
+    heartRate: formData?.vitalSigns?.heartRate || '',
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const suggestedSymptoms = [
     'Fièvre', 'Toux', 'Maux de tête', 'Fatigue', 
     'Nausées', 'Douleurs abdominales', 'Vertiges', 'Frissons'
   ];
 
+  // Fonction sécurisée pour updateFormData
+  const safeUpdateFormData = (newData) => {
+    if (updateFormData && typeof updateFormData === 'function') {
+      updateFormData(newData);
+    }
+  };
+
   const addSymptom = (symptom) => {
-    if (symptom && !symptoms.includes(symptom)) {
-      setSymptoms([...symptoms, symptom]);
+    if (symptom && !localSymptoms.includes(symptom)) {
+      const newSymptoms = [...localSymptoms, symptom];
+      setLocalSymptoms(newSymptoms);
+      safeUpdateFormData({ ...formData, symptoms: newSymptoms });
       setCurrentSymptom('');
     }
   };
 
   const removeSymptom = (symptom) => {
-    setSymptoms(symptoms.filter(s => s !== symptom));
+    const newSymptoms = localSymptoms.filter(s => s !== symptom);
+    setLocalSymptoms(newSymptoms);
+    safeUpdateFormData({ ...formData, symptoms: newSymptoms });
   };
 
-  const handleSubmit = (e) => {
+  const handleVitalSignChange = (field, value) => {
+    const newVitalSigns = { ...localVitalSigns, [field]: value };
+    setLocalVitalSigns(newVitalSigns);
+    safeUpdateFormData({ ...formData, vitalSigns: newVitalSigns });
+  };
+
+  const handleNavigateWithData = (page, data) => {
+    console.log('[Symptoms] Navigation alternative vers:', page, 'avec:', data);
+    
+    // Solution directe via localStorage
+    if (page === 'results' && data?.diagnosisResult) {
+      localStorage.setItem('lastDiagnosisResult', JSON.stringify(data.diagnosisResult));
+      console.log('Données sauvegardées dans localStorage');
+    }
+    
+    // Appel normal
+    if (onNavigate && typeof onNavigate === 'function') {
+      onNavigate(page, data);
+    } else {
+      console.error('onNavigate non disponible, utilisation de fallback');
+      // Fallback - redirection directe
+      window.location.href = '/?page=results';
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onNavigate('results');
+    
+    if (localSymptoms.length === 0) {
+      setError('Veuillez ajouter au moins un symptôme');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // PRÉPARATION DES DONNÉES COMPLÈTES
+      const completeFormData = {
+        ...formData,
+        symptoms: localSymptoms,
+        vitalSigns: localVitalSigns
+      };
+
+      console.log('Envoi des données complètes:', completeFormData);
+
+      // APPEL API RÉEL
+      const response = await fetch('/api/diagnose', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(completeFormData),
+      });
+
+      const result = await response.json();
+      console.log('Réponse API:', result);
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erreur lors du diagnostic');
+      }
+
+      // Attendre que les données soient traitées avant la navigation
+      console.log('Navigation vers results avec données:', result);
+      
+      handleNavigateWithData('results', { diagnosisResult: result });
+      
+
+    } catch (err) {
+      console.error('Erreur:', err);
+      setError(err.message || 'Erreur de connexion au service médical');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -56,6 +145,12 @@ export function SymptomsPage({ onNavigate }) {
 
       {/* Form */}
       <div className="max-w-2xl mx-auto px-6 py-8">
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Symptoms Input */}
           <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm rounded-2xl">
@@ -105,11 +200,11 @@ export function SymptomsPage({ onNavigate }) {
               </div>
 
               {/* Selected Symptoms */}
-              {symptoms.length > 0 && (
+              {localSymptoms.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-3">Symptômes sélectionnés :</p>
                   <div className="flex flex-wrap gap-2">
-                    {symptoms.map((symptom) => (
+                    {localSymptoms.map((symptom) => (
                       <Badge
                         key={symptom}
                         variant="secondary"
@@ -149,8 +244,8 @@ export function SymptomsPage({ onNavigate }) {
                   type="number"
                   step="0.1"
                   placeholder="Ex: 37.5"
-                  value={vitalSigns.temperature}
-                  onChange={(e) => setVitalSigns({ ...vitalSigns, temperature: e.target.value })}
+                  value={localVitalSigns.temperature}
+                  onChange={(e) => handleVitalSignChange('temperature', e.target.value)}
                   className="h-12 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-base"
                 />
               </div>
@@ -167,8 +262,8 @@ export function SymptomsPage({ onNavigate }) {
                   id="bloodPressure"
                   type="text"
                   placeholder="Ex: 120/80"
-                  value={vitalSigns.bloodPressure}
-                  onChange={(e) => setVitalSigns({ ...vitalSigns, bloodPressure: e.target.value })}
+                  value={localVitalSigns.bloodPressure}
+                  onChange={(e) => handleVitalSignChange('bloodPressure', e.target.value)}
                   className="h-12 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-base"
                 />
               </div>
@@ -185,8 +280,8 @@ export function SymptomsPage({ onNavigate }) {
                   id="heartRate"
                   type="number"
                   placeholder="Ex: 72"
-                  value={vitalSigns.heartRate}
-                  onChange={(e) => setVitalSigns({ ...vitalSigns, heartRate: e.target.value })}
+                  value={localVitalSigns.heartRate}
+                  onChange={(e) => handleVitalSignChange('heartRate', e.target.value)}
                   className="h-12 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-base"
                 />
               </div>
@@ -206,10 +301,19 @@ export function SymptomsPage({ onNavigate }) {
             <Button
               type="submit"
               className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={symptoms.length === 0}
+              disabled={localSymptoms.length === 0 || isLoading}
             >
-              <Sparkles className="w-5 h-5 mr-2" />
-              Analyser avec l'IA
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Analyse en cours...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Analyser avec l'IA
+                </>
+              )}
             </Button>
           </div>
         </form>

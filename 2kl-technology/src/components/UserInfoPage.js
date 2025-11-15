@@ -1,3 +1,4 @@
+// UserInfoPage.js
 'use client';
 import { useState } from 'react';
 import { Button } from './ui/Button';
@@ -8,12 +9,22 @@ import { Textarea } from './ui/Textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
 import { User, ArrowRight } from 'lucide-react';
 
-export function UserInfoPage({ onNavigate }) {
-  const [formData, setFormData] = useState({
-    age: '',
-    gender: '',
-    medicalHistory: '',
+export function UserInfoPage({ onNavigate, formData, updateFormData }) {
+  const [localData, setLocalData] = useState({
+    age: formData?.age || '',
+    gender: formData?.gender || '',
+    medicalHistory: formData?.medicalHistory || '',
   });
+
+  const handleChange = (field, value) => {
+    const newData = { ...localData, [field]: value };
+    setLocalData(newData);
+    
+    // Vérification sécurisée de updateFormData
+    if (updateFormData && typeof updateFormData === 'function') {
+      updateFormData(newData);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -48,8 +59,8 @@ export function UserInfoPage({ onNavigate }) {
                 id="age"
                 type="number"
                 placeholder="Ex: 35"
-                value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                value={localData.age}
+                onChange={(e) => handleChange('age', e.target.value)}
                 required
                 min="0"
                 max="120"
@@ -61,8 +72,8 @@ export function UserInfoPage({ onNavigate }) {
             <div className="space-y-3">
               <Label htmlFor="gender" className="text-base font-semibold text-gray-900">Sexe *</Label>
               <Select 
-                value={formData.gender}
-                onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                value={localData.gender}
+                onValueChange={(value) => handleChange('gender', value)}
                 required
               >
                 <SelectTrigger className="h-12 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base">
@@ -85,8 +96,8 @@ export function UserInfoPage({ onNavigate }) {
               <Textarea
                 id="medical-history"
                 placeholder="Maladies chroniques, allergies, traitements en cours, opérations passées..."
-                value={formData.medicalHistory}
-                onChange={(e) => setFormData({ ...formData, medicalHistory: e.target.value })}
+                value={localData.medicalHistory}
+                onChange={(e) => handleChange('medicalHistory', e.target.value)}
                 className="min-h-32 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-base resize-none"
               />
               <p className="text-sm text-gray-500">

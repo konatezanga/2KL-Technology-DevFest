@@ -31,7 +31,6 @@ export function AuthPage({ onNavigate, onAuth }) {
     confirmPassword: "",
   });
 
-
   const handleLoginChange = (e) => {
     setLoginForm({
       ...loginForm,
