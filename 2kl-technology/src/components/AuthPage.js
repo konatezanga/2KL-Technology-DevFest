@@ -8,6 +8,10 @@ import { Card, CardContent } from "./ui/Card";
 import { Checkbox } from "./ui/Checkbox";
 import { Activity, Eye, EyeOff, ArrowLeft, Shield, Heart, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { registerUser, loginUser } from "@/firebase/authFunctions";
+
+
+
 function ActivityIcon({ className }) {
   return <Activity className={className} />;
 }
@@ -41,20 +45,41 @@ export function AuthPage({ onNavigate, onAuth }) {
     });
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    console.log("Tentative de Connexion avec:", loginForm);
-     router.push("/accueil");
-  };
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    await loginUser(loginForm.email, loginForm.password);
+    alert("Connecté avec succès !");
+    router.push("/accueil"); // Redirection après connexion
+  } catch (error) {
+    console.error(error);
+    alert("Erreur de connexion : " + error.message);
+  }
+};
 
-  const handleSignup = (e) => {
-    e.preventDefault();
-    console.log("Tentative d'Inscription avec:", signupForm);
-    router.push("/accueil");
-  };
+
+ const handleSignup = async (e) => {
+  e.preventDefault();
+  
+  if (signupForm.password !== signupForm.confirmPassword) {
+    alert("Les mots de passe ne correspondent pas !");
+    return;
+  }
+
+  try {
+    await registerUser(signupForm.email, signupForm.password);
+    alert("Compte créé avec succès !");
+    router.push("/accueil"); // Redirection après inscription
+  } catch (error) {
+    console.error(error);
+    alert("Erreur d'inscription : " + error.message);
+  }
+};
+
 
   const handleBackToHome = () => {
-    onNavigate("landing");
+    router.push("/");
+    
   };
 
   return (

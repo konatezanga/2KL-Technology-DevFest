@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState ,useEffect} from 'react';
+
 
 // Pages du flux diagnostic
 import { UserInfoPage } from '@/components/UserInfoPage';
